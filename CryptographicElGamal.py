@@ -1,16 +1,29 @@
 import CryptoAlgorithms as crypto
+import PrimeHelper as primeHelper
+import random as rd
 
-_bits_min = 62
+_bits_min = 1025
 
 ### Choose p is a prime
 
-p = crypto.generate_prime(bits_min=_bits_min, bits_max=_bits_min+1)
+checker = primeHelper.MillerRabinChecker()
 
-print(f'{_bits_min} prime : {p}')
+_b = False
+_i = 0
+while _b is False:
+    _n = rd.randint(2 ** 2048, 2 ** 4096)
+    _b = checker.get_probably_prime(_n, 2 ** 1024)
+    _i += 1
+    print(f'{_n} is prime : {_b} - {_i}')
+
+print(f'{_n} is prime : {_b}')
 
 ### Create Z*p
 
 ### Choose a in Z*p
+
+#a = rd.randint(_n / 2, _n - 1)
+#print (a)
 
 ### K' = a
 
