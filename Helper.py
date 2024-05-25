@@ -4,6 +4,7 @@
 #
 
 import random
+import math
 
 class MillerRabinChecker:  
     def get_probably_prime(self, n, k):
@@ -101,4 +102,11 @@ class PrimeHelper:
             return None #raise ValueError(f"{a} không có số nghịch đảo modulo {p}")
         else:
             return x % p
-        
+    #
+    #
+    #
+    def find_co_prime(self, m):
+        e = 2
+        while math.gcd(m, e) != 1:
+            e += 1
+        return e
