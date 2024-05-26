@@ -1,62 +1,91 @@
-import random
+import random as rd
 
 from Helper import (
     PrimeHelper
 )
 
-class EllipticCurve:
-    def __init__(self, _p, _a=None, _b=None):
+from Base import (
+    SharableKeyCryptographic
+)
+
+class ECCryptoProvider:
+    def __init__(self):
         self.helper = PrimeHelper()
-        if _a == None and _b == None:
-            _a, _b = self.__create_ellipse_coefs(_p)
-        self.a = _a
-        self.b = _b
-        self.p = _p
 
-    def __create_ellipse_coefs(self, p):
-        a = 0
-        b = 0
-        while (self.__mod_faster(4 * (a ** 3) + 27 * (b ** 2), p) == 0):
-            a = random.randint(-p, p)
-            b = random.randint(-p, p)
-        return (a, b)
-    
-    def __mod(self, n, p):
-        return n % p
-    
-    def __mod_faster(self, n, p):
-        return self.helper.modular_exponentiation(n, 1, p)
-    
-    def __compute_xy_square(self):
-        self.x_square = [(self.__mod(x ** 2, self.p)) for x in range(self.p)]
-        self.y_square = [(self.__mod(x ** 3 + self.a * x + self.b, self.p)) for x in range(self.p)]
+    def generate_cryptographic(self, bm=7, bM=8):
+        p = self.helper.create(bits_min=bm, bits_max=bM, k=64)
+        a, b = 0, 0
 
-    def find_ellipse(self):
-        self.__compute_xy_square()
-        self.ellipse = [[idx for idx, x2 in enumerate(self.x_square) if y2 == x2] for y2 in self.y_square]
-        self._counts = 0
-        for _pair in self.ellipse:
-            self._counts += _pair.__len__()
-        self._counts += 1
-        self.show()
+        while (4 * (a ** 3) + 3 * (b ** 2)) % p == 0:
+            a = rd.randint(1, p)
+            b = rd.randint(1, p)
 
-    def show(self):
-        print(f'Elliptic curve (E) : y^2 = x^3 + {self.a}x + {self.b} mod {self.p}')
-        print(f'-------------')
-        print(f'Ellipse : {self.ellipse}')
-        print(f'-------------')
-        print(f'Total points : {self._counts}')
-        print()
-        print()
+        ec = EllipticCurve(p, a, b)
+
+        return ECCrypto(ec)
+
+
+class ECCrypto:
+    def __init__(self, elliptic_curver):
+        self.ec = elliptic_curver
+
+class ECCryptoSignature:
+    pass
+
+class EllipticCurve:
+    def __init__(self, p, a=1, b=1):
+        self.p = p
+        self.a = a
+        self.b = b
+        #
+        self.q = self._find_Q_p(p)
+        self.E = self._get_point_collection()
+        #
+        print('E = ', self.E)
+        print('Total points = ', len(self.E))
+    def get_y_square(self, x):
+        return (x ** 3 + self.a * x + self.b) % self.p
+    def get_x_square(self, x):
+        return (x ** 2) % self.p
+    #
+    #
+    #
+    def _find_Q_p(self, p):
+        nQ = p // 2
+        Qp = [i ** 2 % p for i in range(1, nQ + 1)]
+        return Qp
+    def _is_y_square_in_Qp(self, x):
+        return self.get_y_square(x) in self.q
+    def _get_y(self, x):
+        if (self._is_y_square_in_Qp(x)):
+            # all y1, y2 t/m y1^2 = y2^2 = y_square is in Z_p
+            # so i calculate it by get_x_square(i)
+            # expected : yy = [y1, y2]
+            yy = []
+            y_square = self.get_y_square(x)
+            for i in range(0, self.p):
+                if (self.get_x_square(i) == y_square):
+                    yy.append(i)
+            return yy
+        else:
+            return None
+    def _get_point_collection(self):
+        E = []
+        E.append((1, 1))
+        for i in range(0, self.p):
+            e = self._get_y(i)
+            if e is not None:
+                E.append((i, e[0]))
+                E.append((i, e[1]))
+        return E
 
 def main():
+    cryptoProvider = ECCryptoProvider()
 
-    helper = PrimeHelper()
-
-    p = helper.create(bits_min=8, bits_max=10)
-
-    elliptic_curve = EllipticCurve(p)
-    elliptic_curve.find_ellipse()
+    # He mat 1
+    r1 = cryptoProvider.generate_cryptographic()
+    print('-' * 50)
+    
 
 if __name__ == '__main__':
     main()
