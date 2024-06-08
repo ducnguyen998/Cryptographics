@@ -20,14 +20,11 @@ class ECCryptoProvider:
             a = rd.randint(1, p)
             b = rd.randint(1, p)
 
-        ec = EllipticCurve(p, a, b)
-
-        return ECCrypto(ec)
-
+        return ECCrypto(curve=EllipticCurve(p, a, b))
 
 class ECCrypto:
-    def __init__(self, elliptic_curver):
-        self.ec = elliptic_curver
+    def __init__(self, curve):
+        self.ec = curve
 
 class ECCryptoSignature:
     pass
@@ -86,6 +83,5 @@ def main():
     r1 = cryptoProvider.generate_cryptographic()
     print('-' * 50)
     
-
 if __name__ == '__main__':
     main()
